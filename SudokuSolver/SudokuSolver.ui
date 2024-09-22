@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>475</width>
-    <height>574</height>
+    <width>477</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,8 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <family>Segoe UI</family>
+          <pointsize>24</pointsize>
           <bold>true</bold>
          </font>
         </property>
@@ -191,8 +192,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>475</width>
-     <height>21</height>
+     <width>477</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -217,9 +218,7 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="SudokuSolver.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

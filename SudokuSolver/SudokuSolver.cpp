@@ -97,7 +97,7 @@ void SudokuSolver::solveButtonClicked()
         }
     }
 
-    bool solved = sudoku.solve();
+    sudoku.solve();
     for (int row = 0; row < 9; ++row) {
         for (int col = 0; col < 9; ++col) {
             grid[row][col] = sudoku.getCell(row, col);
