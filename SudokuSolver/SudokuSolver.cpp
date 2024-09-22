@@ -1,6 +1,7 @@
 #include "SudokuSolver.h"
-#include "Sudoku.h"
 #include <QPair>
+#include "LineEditDelegate.h"
+#include "Sudoku.h"
 
 const int EMPTY = 0;
 #define N 9
@@ -41,6 +42,12 @@ SudokuSolver::SudokuSolver(QWidget* parent)
     ui.tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui.tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     resetTableGrid();
+
+    // Create and set the delegate for column 1 (second column)
+    LineEditDelegate *delegate = new LineEditDelegate(this);
+    for (int i = 0; i < 9; i++) {
+        ui.tableWidget->setItemDelegateForColumn(i, delegate);
+    }
 }
 
 SudokuSolver::~SudokuSolver()

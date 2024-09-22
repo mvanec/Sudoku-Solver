@@ -9,11 +9,13 @@ CONFIG += lrelease
 CONFIG += embed_translations
 
 SOURCES += \
+    LineEditDelegate.cpp \
     main.cpp \
     Sudoku.cpp \
     SudokuSolver.cpp
 
 HEADERS += \
+    LineEditDelegate.h \
     Sudoku.h \
     SudokuSolver.h
 
