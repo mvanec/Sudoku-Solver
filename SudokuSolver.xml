@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<palette>
+ <active>
+  <colorrole role="Button">
+   <brush brushstyle="SolidPattern">
+    <color alpha="255">
+     <red>60</red>
+     <green>60</green>
+     <blue>60</blue>
+    </color>
+   </brush>
+  </colorrole>
+  <colorrole role="Text">
+   <brush brushstyle="SolidPattern">
+    <color alpha="255">
+     <red>23</red>
+     <green>31</green>
+     <blue>255</blue>
+    </color>
+   </brush>
+  </colorrole>
+ </active>
+ <inactive>
+  <colorrole role="Button">
+   <brush brushstyle="SolidPattern">
+    <color alpha="255">
+     <red>60</red>
+     <green>60</green>
+     <blue>60</blue>
+    </color>
+   </brush>
+  </colorrole>
+  <colorrole role="Text">
+   <brush brushstyle="SolidPattern">
+    <color alpha="255">
+     <red>23</red>
+     <green>31</green>
+     <blue>255</blue>
+    </color>
+   </brush>
+  </colorrole>
+ </inactive>
+ <disabled>
+  <colorrole role="Button">
+   <brush brushstyle="SolidPattern">
+    <color alpha="255">
+     <red>60</red>
+     <green>60</green>
+     <blue>60</blue>
+    </color>
+   </brush>
+  </colorrole>
+ </disabled>
+</palette>

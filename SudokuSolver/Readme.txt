@@ -1,0 +1,1 @@
+Sudoku Solver is a small app that allows the user enter a sudoku puzzle in a board. The user can then solve the solution.
