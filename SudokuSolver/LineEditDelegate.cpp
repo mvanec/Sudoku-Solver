@@ -33,8 +33,6 @@ void LineEditDelegate::setModelData(QWidget *editor,
     if (ok && value >= 1 && value <= 9) {
         model->setData(index, text, Qt::EditRole);
     } else {
-        // Optionally, reset to a default value or clear the cell
-        // Here, we'll reset to "1" if the input is invalid
         model->setData(index, QVariant(), Qt::EditRole);
     }
 }
@@ -44,4 +42,18 @@ void LineEditDelegate::updateEditorGeometry(QWidget *editor,
                                             const QModelIndex &) const
 {
     editor->setGeometry(option.rect);
+}
+
+bool LineEditDelegate::eventFilter(QObject *object, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Tab || keyEvent->key() == Qt::Key_Left ||
+            keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Up ||
+            keyEvent->key() == Qt::Key_Down) {
+            // Accept the event to allow focus to move
+            return false; // Don't handle, let the event propagate
+        }
+    }
+    return QStyledItemDelegate::eventFilter(object, event); // Pass other events to base class
 }
