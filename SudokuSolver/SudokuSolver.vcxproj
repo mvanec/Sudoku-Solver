@@ -108,6 +108,7 @@
     <QtRcc Include="SudokuSolver.qrc" />
     <QtUic Include="SudokuSolver.ui" />
     <QtMoc Include="SudokuSolver.h" />
+    <ClCompile Include="LineEditDelegate.cpp" />
     <ClCompile Include="Sudoku.cpp" />
     <ClCompile Include="SudokuSolver.cpp" />
     <ClCompile Include="main.cpp" />
@@ -115,6 +116,7 @@
     <ResourceCompile Include="SudokuSolver.rc" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="LineEditDelegate.h" />
     <ClInclude Include="Sudoku.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

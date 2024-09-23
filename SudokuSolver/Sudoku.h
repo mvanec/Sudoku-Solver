@@ -6,7 +6,7 @@ class Sudoku {
 public:
     Sudoku();
     bool solve();
-    void setCell(int row, int col, int value);
+    bool setCell(int row, int col, int value);
     int getCell(int row, int col);
     bool isValidBoard() const;
     QString getStatus() const;

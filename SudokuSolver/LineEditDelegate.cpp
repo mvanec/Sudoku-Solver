@@ -35,7 +35,7 @@ void LineEditDelegate::setModelData(QWidget *editor,
     } else {
         // Optionally, reset to a default value or clear the cell
         // Here, we'll reset to "1" if the input is invalid
-        model->setData(index, "1", Qt::EditRole);
+        model->setData(index, QVariant(), Qt::EditRole);
     }
 }
 

@@ -21,21 +21,22 @@ bool Sudoku::solve()
     return solveSudoku();
 }
 
-void Sudoku::setCell(int row, int col, int value)
+bool Sudoku::setCell(int row, int col, int value)
 {
     if (row < 0 || row >= 9 || col < 0 || col >= 9) {
         qDebug()
             << QString("Invalid row or column index: (%1, %2)").arg(row).arg(col);
-        return;
+        return false;
     }
     if (value < 0 || value > 9) {
         qDebug() << QString("Invalid cell value %1 in (%2, %3)")
                         .arg(value)
                         .arg(row)
                         .arg(col);
-        return;
+        return false;
     }
     grid[row][col] = value;
+    return true;
 }
 
 int Sudoku::getCell(int row, int col)
