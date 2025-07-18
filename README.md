@@ -29,6 +29,7 @@ Sudoku Solver is a desktop application for solving and analyzing Sudoku puzzles.
 6. **Run the Application**
    - Set `SudokuSolver` as the startup project and run.
 
+**Note:** For current versions of Qt, if the Debug configuration launches with an error, make sure to set the `Qt Deploy Tool→General→Run Deployment Tool` to "Yes".
 ---
 
 ## 2. Project Setup in Qt Creator
