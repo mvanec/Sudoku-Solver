@@ -22,6 +22,8 @@ INCLUDEPATH += \
 DEPENDPATH += \
     ../SudokuSolver
 
-!win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD/../SudokuSolver/Sudoku.o
+win32:CONFIG(debug, debug): LIBS += $$OUT_PWD/../SudokuSolver/SudokuSolver/debug/Sudoku.obj
+else:!win32:CONFIG(debug, debug): LIBS += $$OUT_PWD/../SudokuSolver/Sudoku.o
 
-# CONFIG(release, debug|release): LIBS += -L$$PWD/../lib/release/ -lQtDatabase
+macx: QMAKE_MACOSX_DEPLOYMENT_TARGET = 15.0
+message(Targeting macOS: $$QMAKE_MACOSX_DEPLOYMENT_TARGET)

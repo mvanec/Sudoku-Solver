@@ -30,3 +30,5 @@ DISTFILES += \
     README.md
 
 TARGET = SudokuSolver
+
+macx: QMAKE_MACOSX_DEPLOYMENT_TARGET = 15.0
