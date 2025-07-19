@@ -3,6 +3,9 @@
 #include <QIntValidator>
 #include <QLineEdit>
 #include <QStyledItemDelegate>
+#include <QKeyEvent>
+#include <QWidget>
+#include "Sudoku.h"
 
 class LineEditDelegate : public QStyledItemDelegate
 {
@@ -24,4 +27,8 @@ public:
     void updateEditorGeometry(QWidget *editor,
                               const QStyleOptionViewItem &option,
                               const QModelIndex &index) const override;
+
+protected:
+    // Event filter to allow navigation with Tab and Arrow keys
+    bool eventFilter(QObject *object, QEvent *event) override;
 };

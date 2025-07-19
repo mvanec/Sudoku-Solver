@@ -1,17 +1,19 @@
 #include "Sudoku.h"
-
 #include <QDebug>
 
-constexpr auto MAX_SIZE = 9;
-constexpr auto BOX_SIZE = 3;
-
 Sudoku::Sudoku()
+    : grid(GRID_SIZE, std::vector<int>(GRID_SIZE, EMPTY_CELL))
 {
-    grid.resize(9, std::vector<int>(9, 0));
-    status = "";
 }
 
-// Solve the board. Check first if the board is valid, then execute the solver
+void Sudoku::clear()
+{
+    for (auto& row : grid) {
+        std::fill(row.begin(), row.end(), EMPTY_CELL);
+    }
+    status.clear();
+}
+
 bool Sudoku::solve()
 {
     if (!isValidBoard()) {
@@ -23,94 +25,76 @@ bool Sudoku::solve()
 
 bool Sudoku::setCell(int row, int col, int value)
 {
-    if (row < 0 || row >= 9 || col < 0 || col >= 9) {
-        qDebug()
-            << QString("Invalid row or column index: (%1, %2)").arg(row).arg(col);
+    if (!isValidPosition(row, col)) {
+        qDebug() << QString("Invalid position: (%1, %2)").arg(row).arg(col);
         return false;
     }
-    if (value < 0 || value > 9) {
-        qDebug() << QString("Invalid cell value %1 in (%2, %3)")
-                        .arg(value)
-                        .arg(row)
-                        .arg(col);
+
+    if (!isValidValue(value, true)) {
+        qDebug() << QString("Invalid value %1 at (%2, %3)").arg(value).arg(row).arg(col);
         return false;
     }
+
     grid[row][col] = value;
     return true;
 }
 
-int Sudoku::getCell(int row, int col)
+int Sudoku::getCell(int row, int col) const
 {
-    if (row < 0 || row >= 9 || col < 0 || col >= 9) {
-        qDebug()
-            << QString("Invalid row or column index: (%1, %2)").arg(row).arg(col);
+    if (!isValidPosition(row, col)) {
+        qDebug() << QString("Invalid position: (%1, %2)").arg(row).arg(col);
         return -1;
     }
     return grid[row][col];
 }
 
-QString Sudoku::getStatus() const { return status; }
-
-// Make sure the board is valid. It should not have any duplicate numbers
-// in the same row, or in the same column, or in the same 3x3 box.
-bool Sudoku::isValidBoard() const
+QString Sudoku::getStatus() const
 {
-    for (int row = 0; row < MAX_SIZE; row++) {
-        for (int col = 0; col < MAX_SIZE; col++) {
-            int num = grid[row][col];
-            if (num == 0) {
-                continue;
-            }
-            if (duplicateInRow(row, num) || duplicateInCol(col, num) || duplicateInBox(row - row % 3, col - col % 3, num)) {
-                qDebug() << "Duplicate found in board for " << num;
-                return false;
-            }
-        }
-    }
-    return true;
+    return status;
 }
 
-// Check if the number is duplicated in the row
-bool Sudoku::duplicateInRow(int row, int num) const
+bool Sudoku::isValidPosition(int row, int col) const
 {
-    int count = 0;
-    for (int col = 0; col < MAX_SIZE; col++) {
-        if (grid[row][col] == num) {
-            count++;
-        }
-        if (count > 1) {
+    return row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE;
+}
+
+bool Sudoku::isValidValue(int value, bool allowEmpty) const
+{
+    if (allowEmpty && value == EMPTY_CELL) {
+        return true;
+    }
+    return value >= MIN_VALUE && value <= MAX_VALUE;
+}
+
+bool Sudoku::isNumberPresentInRow(int row, int num, int excludeCol) const
+{
+    for (int col = 0; col < GRID_SIZE; col++) {
+        if (col != excludeCol && grid[row][col] == num) {
             return true;
         }
     }
     return false;
 }
 
-// Check if the number is duplicated in the column
-bool Sudoku::duplicateInCol(int col, int num) const
+bool Sudoku::isNumberPresentInCol(int col, int num, int excludeRow) const
 {
-    int count = 0;
-
-    for (int row = 0; row < MAX_SIZE; row++) {
-        if (grid[row][col] == num) {
-            count++;
-        }
-        if (count > 1) {
+    for (int row = 0; row < GRID_SIZE; row++) {
+        if (row != excludeRow && grid[row][col] == num) {
             return true;
         }
     }
     return false;
 }
 
-// Check if the number is duplicated in each 3x3 box in the board
-bool Sudoku::duplicateInBox(int boxStartRow, int boxStartCol, int num) const
+bool Sudoku::isNumberPresentInBox(int boxStartRow, int boxStartCol, int num, int excludeRow, int excludeCol) const
 {
-    int count = 0;
     for (int row = 0; row < BOX_SIZE; row++) {
         for (int col = 0; col < BOX_SIZE; col++) {
-            if (grid[row + boxStartRow][col + boxStartCol] == num) {
-                count++;
-            }
-            if (count > 1) {
+            int actualRow = row + boxStartRow;
+            int actualCol = col + boxStartCol;
+
+            if ((actualRow != excludeRow || actualCol != excludeCol) &&
+                grid[actualRow][actualCol] == num) {
                 return true;
             }
         }
@@ -118,67 +102,61 @@ bool Sudoku::duplicateInBox(int boxStartRow, int boxStartCol, int num) const
     return false;
 }
 
-// The main solver method, using a recursive backtrace algorithm
+bool Sudoku::isValidBoard() const
+{
+    for (int row = 0; row < GRID_SIZE; row++) {
+        for (int col = 0; col < GRID_SIZE; col++) {
+            int num = grid[row][col];
+            if (num == EMPTY_CELL) {
+                continue;
+            }
+
+            // Check if this number appears elsewhere in the same row, column, or box
+            if (isNumberPresentInRow(row, num, col) ||
+                isNumberPresentInCol(col, num, row) ||
+                isNumberPresentInBox(getBoxStart(row), getBoxStart(col), num, row, col)) {
+                qDebug() << "Duplicate found in board for" << num << "at" << row << "," << col;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 bool Sudoku::solveSudoku()
 {
     int row, col;
     if (!findUnassignedLocation(row, col)) {
         status = "Solved";
-        return true; // All cells are filled
+        return true;
     }
 
-    for (int num = 1; num <= 9; ++num) {
+    for (int num = MIN_VALUE; num <= MAX_VALUE; ++num) {
         if (isSafe(row, col, num)) {
             grid[row][col] = num;
             if (solveSudoku()) {
                 return true;
             }
-            grid[row][col] = 0; // Undo the assignment
+            grid[row][col] = EMPTY_CELL;
         }
     }
+
     status = "No solution";
     return false;
 }
 
-// Check if the found number is safe or valid for the cell
-// This is slightly different than the duplicateIn* methods
-// as it checks if the number is in the row or column or box before
-// adding the number to the grid at the specified location.
 bool Sudoku::isSafe(int row, int col, int num) const
 {
-    // Check if 'num' is not in current row
-    for (int x = 0; x < 9; ++x) {
-        if (grid[row][x] == num) {
-            return false;
-        }
-    }
-
-    // Check if 'num' is not in current column
-    for (int x = 0; x < 9; ++x) {
-        if (grid[x][col] == num) {
-            return false;
-        }
-    }
-
-    // Check if 'num' is not in current 3x3 box
-    int startRow = row - row % 3;
-    int startCol = col - col % 3;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            if (grid[i + startRow][j + startCol] == num) {
-                return false;
-            }
-        }
-    }
-
-    return true;
+    return !isNumberPresentInRow(row, num) &&
+           !isNumberPresentInCol(col, num) &&
+           !isNumberPresentInBox(getBoxStart(row), getBoxStart(col), num);
 }
 
 bool Sudoku::findUnassignedLocation(int& row, int& col) const
 {
-    for (row = 0; row < 9; ++row) {
-        for (col = 0; col < 9; ++col) {
-            if (grid[row][col] == 0) {
+    for (row = 0; row < GRID_SIZE; ++row) {
+        for (col = 0; col < GRID_SIZE; ++col) {
+            if (grid[row][col] == EMPTY_CELL) {
                 return true;
             }
         }
