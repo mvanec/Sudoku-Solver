@@ -9,8 +9,10 @@ QWidget *LineEditDelegate::createEditor(QWidget *parent,
                                         const QModelIndex &) const
 {
     QLineEdit *editor = new QLineEdit(parent);
-    QIntValidator *validator = new QIntValidator(1, 9, editor); // Set range 1-9
+    // Use constants from Sudoku class for validation range
+    QIntValidator *validator = new QIntValidator(Sudoku::MIN_VALUE, Sudoku::MAX_VALUE, editor);
     editor->setValidator(validator);
+    editor->setMaxLength(1); // Only allow single digit
     return editor;
 }
 
@@ -27,12 +29,21 @@ void LineEditDelegate::setModelData(QWidget *editor,
 {
     QLineEdit *lineEdit = static_cast<QLineEdit *>(editor);
     QString text = lineEdit->text();
+
+    if (text.isEmpty()) {
+        // Allow clearing the cell
+        model->setData(index, QVariant(), Qt::EditRole);
+        return;
+    }
+
     bool ok;
     int value = text.toInt(&ok);
 
-    if (ok && value >= 1 && value <= 9) {
+    // Use Sudoku class validation constants
+    if (ok && value >= Sudoku::MIN_VALUE && value <= Sudoku::MAX_VALUE) {
         model->setData(index, text, Qt::EditRole);
     } else {
+        // Clear invalid input
         model->setData(index, QVariant(), Qt::EditRole);
     }
 }
@@ -48,12 +59,16 @@ bool LineEditDelegate::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_Tab || keyEvent->key() == Qt::Key_Left ||
-            keyEvent->key() == Qt::Key_Right || keyEvent->key() == Qt::Key_Up ||
-            keyEvent->key() == Qt::Key_Down) {
-            // Accept the event to allow focus to move
-            return false; // Don't handle, let the event propagate
+
+        // Allow navigation keys to propagate
+        static const QList<int> navigationKeys = {
+            Qt::Key_Tab, Qt::Key_Left, Qt::Key_Right, Qt::Key_Up, Qt::Key_Down
+        };
+
+        if (navigationKeys.contains(keyEvent->key())) {
+            return false; // Let the event propagate
         }
     }
-    return QStyledItemDelegate::eventFilter(object, event); // Pass other events to base class
+
+    return QStyledItemDelegate::eventFilter(object, event);
 }

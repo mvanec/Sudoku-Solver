@@ -5,6 +5,7 @@
 #include <QStyledItemDelegate>
 #include <QKeyEvent>
 #include <QWidget>
+#include "Sudoku.h"
 
 class LineEditDelegate : public QStyledItemDelegate
 {

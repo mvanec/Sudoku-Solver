@@ -1,83 +1,132 @@
 #include "pch.h"
 #include "gtest/gtest.h"
 #include "Sudoku.h"
+#include <array>
+#include <map>
+#include <string>
 
-// Test setting a cell with an invalid column index
-TEST(TestSetCell, InvalidColumn)
-{
+// Test fixture for common test setup
+class SudokuTest : public ::testing::Test {
+protected:
     Sudoku sudoku;
-    EXPECT_FALSE(sudoku.setCell(0, 9, 1));
+
+    // Helper method to fill grid from raw array
+    void fillGrid(const int inputGrid[9][9])
+    {
+        for (int row = 0; row < Sudoku::GRID_SIZE; row++) {
+            for (int col = 0; col < Sudoku::GRID_SIZE; col++) {
+                sudoku.setCell(row, col, inputGrid[row][col]);
+            }
+        }
+    }
+    // Helper method to fill grid from std::array
+    void fillGrid(const std::array<std::array<int, 9>, 9>& inputGrid)
+    {
+        for (int row = 0; row < Sudoku::GRID_SIZE; row++) {
+            for (int col = 0; col < Sudoku::GRID_SIZE; col++) {
+                sudoku.setCell(row, col, inputGrid[row][col]);
+            }
+        }
+    }
+
+    // Helper method to verify grid matches expected values
+    void verifyGrid(const int expectedGrid[9][9])
+    {
+        for (int row = 0; row < Sudoku::GRID_SIZE; row++) {
+            for (int col = 0; col < Sudoku::GRID_SIZE; col++) {
+                EXPECT_EQ(expectedGrid[row][col], sudoku.getCell(row, col))
+                    << "Mismatch at position (" << row << ", " << col << ")";
+            }
+        }
+    }
+};
+
+
+// Test setting a cell with invalid positions
+TEST_F(SudokuTest, InvalidPositions)
+{
+    // Test invalid column
+    EXPECT_FALSE(sudoku.setCell(0, Sudoku::GRID_SIZE, 1));
+    EXPECT_FALSE(sudoku.setCell(0, -1, 1));
+
+    // Test invalid row
+    EXPECT_FALSE(sudoku.setCell(Sudoku::GRID_SIZE, 0, 1));
+    EXPECT_FALSE(sudoku.setCell(-1, 0, 1));
 }
 
-// Test setting a cell with an invalid row index
-TEST(TestSetCell, InvalidRow)
+// Test setting a cell with invalid values
+TEST_F(SudokuTest, InvalidValues)
 {
-    Sudoku sudoku;
-    EXPECT_FALSE(sudoku.setCell(9, 0, 1));
-}
-
-// Test setting a cell with a value over 9
-TEST(TestSetCell, ValueTooHigh)
-{
-    Sudoku sudoku;
-    EXPECT_FALSE(sudoku.setCell(0, 0, 10));
-}
-
-// Test setting a cell with a value under 1
-TEST(TestSetCell, ValueTooLow)
-{
-    Sudoku sudoku;
+    EXPECT_FALSE(sudoku.setCell(0, 0, Sudoku::MAX_VALUE + 1));
     EXPECT_FALSE(sudoku.setCell(0, 0, -1));
+
+    // Empty cell (0) should be allowed
+    EXPECT_TRUE(sudoku.setCell(0, 0, Sudoku::EMPTY_CELL));
 }
 
-// Test setting a valid cell
-TEST(TestSetCell, ValidValue)
+// Test setting valid cells
+TEST_F(SudokuTest, ValidValues)
 {
-    Sudoku sudoku;
-    EXPECT_TRUE(sudoku.setCell(0, 0, 1));
+    for (int value = Sudoku::MIN_VALUE; value <= Sudoku::MAX_VALUE; value++) {
+        EXPECT_TRUE(sudoku.setCell(0, 0, value));
+        EXPECT_EQ(value, sudoku.getCell(0, 0));
+    }
 }
 
 // Test an empty board
-TEST(TestIsValidBoard, BoardEmpty)
+TEST_F(SudokuTest, BoardEmpty)
 {
-    Sudoku sudoku;
     EXPECT_TRUE(sudoku.isValidBoard());
 }
 
 // Test a board with a duplicate in a row
-TEST(TestIsValidBoard, DuplicateInRow)
+TEST_F(SudokuTest, DuplicateInRow)
 {
-    Sudoku sudoku;
     sudoku.setCell(4, 0, 1);
     sudoku.setCell(4, 5, 1);
     EXPECT_FALSE(sudoku.isValidBoard());
 }
 
 // Test a board with a duplicate in a column
-TEST(TestIsValidBoard, DuplicateInColumn)
+TEST_F(SudokuTest, DuplicateInColumn)
 {
-    Sudoku sudoku;
     sudoku.setCell(1, 6, 2);
     sudoku.setCell(3, 6, 2);
     EXPECT_FALSE(sudoku.isValidBoard());
 }
 
 // Test a board with a duplicate in a box
-TEST(TestIsValidBoard, DuplicateInBox)
+TEST_F(SudokuTest, DuplicateInBox)
 {
-    Sudoku sudoku;
     sudoku.setCell(3, 3, 3);
     sudoku.setCell(5, 5, 3);
     EXPECT_FALSE(sudoku.isValidBoard());
 }
 
-// Test a known good board is solved correctly
-TEST(TestIsValidBoard, GoodBoard)
+// Test the clear functionality
+TEST_F(SudokuTest, ClearBoard)
 {
-    Sudoku sudoku;
+    // Fill some cells
+    sudoku.setCell(0, 0, 5);
+    sudoku.setCell(1, 1, 7);
+    sudoku.setCell(2, 2, 9);
 
+    // Clear the board
+    sudoku.clear();
+
+    // Verify all cells are empty
+    for (int row = 0; row < Sudoku::GRID_SIZE; row++) {
+        for (int col = 0; col < Sudoku::GRID_SIZE; col++) {
+            EXPECT_EQ(Sudoku::EMPTY_CELL, sudoku.getCell(row, col));
+        }
+    }
+}
+
+// Test a known good board is solved correctly
+TEST_F(SudokuTest, GoodBoard)
+{
     // Test the given input grid
-    int inputGrid[9][9] = {
+    const int inputGrid[9][9] = {
         { 0, 0, 1, 3, 0, 2, 0, 0, 0 },
         { 0, 0, 3, 0, 0, 7, 0, 4, 5 },
         { 0, 0, 7, 0, 0, 0, 0, 0, 9 },
@@ -89,16 +138,12 @@ TEST(TestIsValidBoard, GoodBoard)
         { 0, 0, 0, 9, 0, 8, 5, 0, 0 }
     };
 
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            sudoku.setCell(row, col, inputGrid[row][col]);
-        }
-    }
-
+    fillGrid(inputGrid);
     EXPECT_TRUE(sudoku.solve());
+    EXPECT_EQ("Solved", sudoku.getStatus().toStdString());
 
     // Verify the solved grid
-    int solvedGrid[9][9] = {
+    const int solvedGrid[9][9] = {
         { 4, 5, 1, 3, 9, 2, 7, 8, 6 },
         { 9, 2, 3, 8, 6, 7, 1, 4, 5 },
         { 8, 6, 7, 1, 5, 4, 3, 2, 9 },
@@ -110,92 +155,106 @@ TEST(TestIsValidBoard, GoodBoard)
         { 3, 7, 4, 9, 1, 8, 5, 6, 2 }
     };
 
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-           EXPECT_EQ(solvedGrid[row][col], sudoku.getCell(row, col));
-        }
-    }
+    verifyGrid(solvedGrid);
 }
 
-// Test a known bad board is not solved with duplicates in rows
-TEST(TestIsValidBoard, InvalidBoardRows)
+// Test invalid boards with duplicates
+TEST_F(SudokuTest, InvalidBoardDuplicateInRow)
 {
-    Sudoku sudoku;
+    std::array<std::array<int, 9>, 9> grid;
 
-    // Test the given input grid
-    int inputGrid[9][9] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 9, 0, 0, 0, 9 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
-
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            sudoku.setCell(row, col, inputGrid[row][col]);
+    // Initialize all elements to 0
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            grid[i][j] = 0;
         }
     }
 
+    // Add duplicate in row
+    grid[2][4] = 9;
+    grid[2][8] = 9;
+
+    fillGrid(grid);
     EXPECT_FALSE(sudoku.solve());
+    EXPECT_EQ("Invalid board: duplicate numbers in rows, columns, or boxes",
+              sudoku.getStatus().toStdString());
 }
 
-// Test a known bad board is not solved with duplicates in columns
-TEST(TestIsValidBoard, InvalidBoardColumns)
+TEST_F(SudokuTest, InvalidBoardDuplicateInColumn)
 {
-    Sudoku sudoku;
+    std::array<std::array<int, 9>, 9> grid;
 
-    // Test the given input grid
-    int inputGrid[9][9] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 9 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 9 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
-
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            sudoku.setCell(row, col, inputGrid[row][col]);
+    // Initialize all elements to 0
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            grid[i][j] = 0;
         }
     }
 
+    // Add duplicate in column
+    grid[2][8] = 9;
+    grid[4][8] = 9;
+
+    fillGrid(grid);
     EXPECT_FALSE(sudoku.solve());
+    EXPECT_EQ("Invalid board: duplicate numbers in rows, columns, or boxes",
+              sudoku.getStatus().toStdString());
 }
 
-// Test a known bad board is not solved with duplicates in boxes
-TEST(TestIsValidBoard, InvalidBoardBoxes)
+TEST_F(SudokuTest, InvalidBoardDuplicateInBox)
 {
-    Sudoku sudoku;
+    std::array<std::array<int, 9>, 9> grid;
 
-    // Test the given input grid
-    int inputGrid[9][9] = {
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 9, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 9 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
-
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            sudoku.setCell(row, col, inputGrid[row][col]);
+    // Initialize all elements to 0
+    for (int i = 0; i < 9; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            grid[i][j] = 0;
         }
     }
 
+    // Add duplicate in box
+    grid[3][6] = 9;
+    grid[4][8] = 9;
+
+    fillGrid(grid);
     EXPECT_FALSE(sudoku.solve());
+    EXPECT_EQ("Invalid board: duplicate numbers in rows, columns, or boxes",
+              sudoku.getStatus().toStdString());
+}
+
+// Test edge cases
+TEST_F(SudokuTest, GetCellInvalidPosition)
+{
+    EXPECT_EQ(-1, sudoku.getCell(-1, 0));
+    EXPECT_EQ(-1, sudoku.getCell(0, -1));
+    EXPECT_EQ(-1, sudoku.getCell(Sudoku::GRID_SIZE, 0));
+    EXPECT_EQ(-1, sudoku.getCell(0, Sudoku::GRID_SIZE));
+}
+
+// Test that a nearly complete puzzle can be solved
+TEST_F(SudokuTest, NearlyCompletePuzzle)
+{
+    // Create a puzzle that's almost complete with just one missing value
+    const int puzzleGrid[9][9] = {
+        { 1, 2, 3, 4, 5, 6, 7, 8, 0 },  // Row 0: missing value at (0,8)
+        { 4, 5, 6, 7, 8, 9, 1, 2, 3 },
+        { 7, 8, 9, 1, 2, 3, 4, 5, 6 },
+        { 2, 1, 4, 3, 6, 5, 8, 9, 7 },
+        { 3, 6, 5, 8, 9, 7, 2, 1, 4 },
+        { 8, 9, 7, 2, 1, 4, 3, 6, 5 },
+        { 5, 3, 1, 6, 4, 2, 9, 7, 8 },
+        { 6, 4, 2, 9, 7, 8, 5, 3, 1 },
+        { 9, 7, 8, 5, 3, 1, 6, 4, 2 }
+    };
+
+    fillGrid(puzzleGrid);
+
+    // This puzzle should be solvable with just one missing value
+    EXPECT_TRUE(sudoku.solve());
+    EXPECT_EQ("Solved", sudoku.getStatus().toStdString());
+
+    // Verify that the missing value (9) was placed at position (0,8)
+    EXPECT_EQ(9, sudoku.getCell(0, 8));
 }
 
 // int main(int argc, char** argv)
