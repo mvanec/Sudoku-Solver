@@ -27,6 +27,6 @@ FORMS += \
 
 DISTFILES += \
     License.txt \
-    Readme.txt
+    README.md
 
 TARGET = SudokuSolver

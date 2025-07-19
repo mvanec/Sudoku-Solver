@@ -22,5 +22,6 @@ INCLUDEPATH += \
 DEPENDPATH += \
     ../SudokuSolver
 
-LIBS += $$PWD/../build/Qt_6_7_2_for_macOS-Debug/SudokuSolver/Sudoku.o
+!win32:CONFIG(release, debug|release): LIBS += $$OUT_PWD/../SudokuSolver/Sudoku.o
+
 # CONFIG(release, debug|release): LIBS += -L$$PWD/../lib/release/ -lQtDatabase
